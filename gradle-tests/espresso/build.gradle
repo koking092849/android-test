@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'androidx.test.gradletests.espresso'
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 14
+        targetSdk 33
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    testOptions {
+        animationsDisabled = true
+        managedDevices {
+            devices {
+                // run with ../gradlew  nexusOneApi30DebugAndroidTest
+                nexusOneApi30(com.android.build.api.dsl.ManagedVirtualDevice) {
+                    // A lower resolution device is used here for better emulator performance
+                    device = "Nexus One"
+                    apiLevel = 30
+                    // Also use the AOSP Automated Test Device image for better emulator performance
+                    systemImageSource = "aosp-atd"
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.ext.truth
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.espresso.intents
+
+}

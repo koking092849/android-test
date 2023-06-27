@@ -19,8 +19,7 @@ again.
 
 AndroidX Test uses the [Bazel](https://bazel.build) build system.
 
-Currently only Linux is fully supported. For Mac and windows users, you may be able to build
-and run the Robolectric tests.
+Currently only Linux is fully supported. Mac may work but is not regularly tested
 
 ### One time setup
 
@@ -28,19 +27,14 @@ and run the Robolectric tests.
     [clone](https://help.github.com/articles/cloning-a-repository/) the
     [AndroidX Test repo](https://github.com/android/android-test)
 *   Install [Bazelisk](https://github.com/bazelbuild/bazelisk/blob/master/README.md)
-    For instrumentation testing on Linux make sure your environment
-    meets the following
-    [prerequisites](https://docs.bazel.build/versions/master/android-instrumentation-test.html#prerequisites)
+    Note that instrumentation test execution support is currently not setup
+    for androidx test libraries.
 *   Install [maven](http://maven.apache.org/install.html) and make it available
     on PATH.
 *   Install the [Android SDK](https://developer.android.com/studio/install) and
     run the following command to ensure you have the necessary components:
-    `./tools/bin/sdkmanager --install 'build-tools;30.0.3'
-    'platforms;android-30' 'platforms;android-31' 'emulator' 'platform-tools'
-    'system-images;android-19;default;x86'
-    'system-images;android-21;default;x86'
-    'system-images;android-22;default;x86'
-    'system-images;android-23;default;x86'`
+    `./tools/bin/sdkmanager --install 'build-tools;33.0.2'
+    'platforms;android-33' 'emulator' 'platform-tools'
 *   Set the `ANDROID_HOME` environment variable to point to the SDK install
     location. For example
     *   On Linux: `export ANDROID_HOME=/home/$USER/Android/Sdk`
@@ -77,16 +71,24 @@ bazelisk build :axt_m2repository
 ### Testing
 
 ```
-bazelisk test <target path> --spawn_strategy=local
+bazelisk test <target path> 
 ```
 
-eg to run the androidx-test-core tests
+e.g. to run the androidx-test-core tests:
 ```
-bazelisk test //core/javatests/... --spawn_strategy=local --host_force_python=PY2
+bazelisk test //core/javatests/... 
 ```
 
-To run all the robolectric local tests (and thus replicate the GitHub CI) `bazelisk test ... --test_tag_filters=robolectric
---build_tag_filters=robolectric`
+To run all the robolectric local tests (and thus replicate the GitHub CI):
+`bazelisk test ... --test_tag_filters=robolectric --build_tag_filters=robolectric`
+
+To run the gradle integration tests:
+```
+bazelisk build :axt_m2repository
+unzip bazel-bin/axt_m2repository.zip -d ~/.m2/
+cd gradle-tests
+./gradlew nexusOneApi30DebugAndroidTest
+```
 
 ### Troubleshooting
 
@@ -101,8 +103,8 @@ If your project fails to build because of unresolved imports two things might be
     ```bazel
     android_sdk_repository(
         ...
-        api_level = 30,
-        build_tools_version = "30.0.2",
+        api_level = 33,
+        build_tools_version = "33.0.2",
         ...
     )
     ```

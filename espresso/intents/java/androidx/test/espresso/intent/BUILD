@@ -2,10 +2,8 @@
 #   Common library for testing inter and intra app communication via intents.
 
 load("@build_bazel_rules_android//android:rules.bzl", "android_library")
-load("//build_extensions:release.bzl", "axt_release_lib")
-load("//build_extensions:maven_repo.bzl", "maven_artifact")
-load("//build_extensions:axt_versions.bzl", "ANNOTATION_VERSION", "CORE_VERSION", "ESPRESSO_VERSION", "KOTLIN_VERSION", "RULES_VERSION")
-load("//build_extensions:combine_jars.bzl", "combine_jars")
+load("//build_extensions/maven:axt_android_aar.bzl", "axt_android_aar")
+load("//build_extensions/maven:maven_artifact.bzl", "maven_artifact")
 load("//build_extensions:dackka_test.bzl", "dackka_test")
 load("//build_extensions:api_checks.bzl", "api_checks")
 
@@ -16,19 +14,19 @@ package(
     default_visibility = ["//:__subpackages__"],
 )
 
-INTERFACE_FILES = [
-    "ResolvedIntent.java",
-]
-
 android_library(
     name = "intents",
     testonly = 1,
     srcs = glob(
         ["*.java"],
-        exclude = INTERFACE_FILES,
+        exclude = [
+            "Checks.java",
+            "ResolvedIntent.java",
+        ],
     ),
     visibility = ["//visibility:public"],
     deps = [
+        ":precondition_checks",
         ":resolved_intent_interface",
         "//annotation",
         "//espresso/core/java/androidx/test/espresso",
@@ -36,11 +34,11 @@ android_library(
         "//espresso/core/java/androidx/test/espresso:interface",
         "//espresso/core/java/androidx/test/espresso/matcher",
         "//espresso/intents/java/androidx/test/espresso/intent/matcher",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "@androidsdk//:legacy_test-30",
         "@maven//:androidx_annotation_annotation",
         "@maven//:com_google_errorprone_error_prone_annotations",
+        "@maven//:org_hamcrest_hamcrest_core",
         "@maven//:org_hamcrest_hamcrest_library",
     ],
 )
@@ -54,14 +52,15 @@ android_library(
 
 android_library(
     name = "resolved_intent_interface",
-    srcs = INTERFACE_FILES,
+    srcs = ["ResolvedIntent.java"],
 )
 
 # ** Generate the release artifacts **
 
 android_library(
-    name = "espresso_intents_release_lib",
+    name = "espresso_intents_aar_lib",
     testonly = 1,
+    manifest = "AndroidManifest.xml",
     exports = [
         ":intents",
         "//espresso/intents/java/androidx/test/espresso/intent/rule",
@@ -69,57 +68,30 @@ android_library(
 )
 
 # Generates the release artifacts
-axt_release_lib(
-    name = "espresso_intents_release",
-    keep_spec = "androidx/test/espresso/intent",
-    remove_spec = "androidx/test/espresso/intent/R[$$\\.]",
-    deps = [
-        ":espresso_intents_release_lib",
+axt_android_aar(
+    name = "espresso_intents_aar",
+    testonly = 1,
+    expected_class_prefixes = [
+        "androidx.test.espresso.intent",
     ],
-)
-
-filegroup(
-    name = "intents_src",
-    srcs = [
-        ":libintents-src.jar",
-        ":libresolved_intent_interface-src.jar",
-        "//espresso/intents/java/androidx/test/espresso/intent/matcher:libmatcher-src.jar",
-        "//espresso/intents/java/androidx/test/espresso/intent/rule:librule-src.jar",
-    ],
-)
-
-combine_jars(
-    name = "intents_src_jars",
-    srcs = [
-        ":intents_src",
-    ],
-)
-
-dackka_test(
-    name = "espresso_intents_doc",
-    jar = ":espresso_intents_release_all_deploy.jar",
-    src_jar = ":intents_src_jars.jar",
+    included_dep = ":espresso_intents_aar_lib",
 )
 
 maven_artifact(
     name = "espresso_intents_maven_artifact",
-    src = ":espresso_intents_release.aar",
-    artifact_deps = [
-        "androidx.test.espresso:espresso-core:%s" % ESPRESSO_VERSION,
-        "androidx.test:core:%s" % CORE_VERSION,
-        "androidx.test:rules:%s" % RULES_VERSION,
-        "androidx.test:annotation:%s" % ANNOTATION_VERSION,
-        "org.jetbrains.kotlin:kotlin-stdlib:%s" % KOTLIN_VERSION,
-    ],
-    artifact_id = "espresso-intents",
-    group_id = "androidx.test.espresso",
+    testonly = 1,
     last_updated = "20170622000000",
-    src_jar = ":intents_src_jars.jar",
-    version = "%s" % ESPRESSO_VERSION,
+    target = ":espresso_intents_aar",
+)
+
+dackka_test(
+    name = "espresso_intents_doc",
+    runtime_dep = ":espresso_intents_aar_lib",
+    src_jar = ":espresso_intents_aar-src.jar",
 )
 
 api_checks(
     name = "espresso_intents_api",
-    deploy_jar = ":espresso_intents_release_all_deploy.jar",
-    src_jar = ":intents_src_jars.jar",
+    runtime_dep = ":espresso_intents_aar_lib",
+    src_jar = ":espresso_intents_aar-src.jar",
 )

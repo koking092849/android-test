@@ -1,18 +1,6 @@
 load("@build_bazel_rules_android//android:rules.bzl", "android_library")
-load("//build_extensions:release.bzl", "axt_release_lib")
-load("//build_extensions:maven_repo.bzl", "maven_artifact")
-load(
-    "//build_extensions:axt_versions.bzl",
-    "ANDROIDX_CORE_VERSION",
-    "ANDROIDX_DRAWER_LAYOUT_VERSION",
-    "ANDROIDX_LEGACY_SUPPORT_VERSION",
-    "ANDROIDX_RECYCLERVIEW_VERSION",
-    "ANDROIDX_VIEWPAGER_VERSION",
-    "ATF_VERSION",
-    "ESPRESSO_VERSION",
-    "GOOGLE_MATERIAL_VERSION",
-)
-load("//build_extensions:combine_jars.bzl", "combine_jars")
+load("//build_extensions/maven:axt_android_aar.bzl", "axt_android_aar")
+load("//build_extensions/maven:maven_artifact.bzl", "maven_artifact")
 load("//build_extensions:dackka_test.bzl", "dackka_test")
 load("//build_extensions:api_checks.bzl", "api_checks")
 
@@ -69,7 +57,8 @@ android_library(
         "//espresso/core/java/androidx/test/espresso:framework",
         "//espresso/core/java/androidx/test/espresso:interface",
         "//espresso/core/java/androidx/test/espresso/matcher",
-        "//opensource:hamcrest",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )
 
@@ -85,9 +74,10 @@ android_library(
     deps = [
         "//espresso/core/java/androidx/test/espresso",
         "//espresso/core/java/androidx/test/espresso/matcher",
-        "//opensource:hamcrest",
         "//runner/monitor",
         "@maven//:androidx_recyclerview_recyclerview",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )
 
@@ -103,9 +93,9 @@ android_library(
         ":resources",
         "//espresso/core/java/androidx/test/espresso",
         "//espresso/core/java/androidx/test/espresso/matcher",
-        "//opensource:hamcrest",
         "@maven//:androidx_core_core",
         "@maven//:androidx_drawerlayout_drawerlayout",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
 
@@ -116,7 +106,7 @@ android_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//opensource:hamcrest",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
 
@@ -129,8 +119,8 @@ android_library(
     visibility = ["//visibility:public"],
     deps = [
         "//espresso/core/java/androidx/test/espresso",
-        "//opensource:hamcrest",
         "@maven//:com_google_android_apps_common_testing_accessibility_framework_accessibility_test_framework",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
 
@@ -142,10 +132,11 @@ android_library(
     deps = [
         "//espresso/core/java/androidx/test/espresso",
         "//espresso/core/java/androidx/test/espresso/matcher",
-        "//opensource:hamcrest",
         "@maven//:androidx_appcompat_appcompat",
         "@maven//:androidx_drawerlayout_drawerlayout",
         "@maven//:com_google_android_material_material",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )
 
@@ -158,14 +149,16 @@ android_library(
         "//espresso/core/java/androidx/test/espresso",
         "//espresso/core/java/androidx/test/espresso/action",
         "//espresso/core/java/androidx/test/espresso/matcher",
-        "//opensource:hamcrest",
         "@maven//:androidx_viewpager_viewpager",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
 
 android_library(
-    name = "espresso_contrib_release_lib",
+    name = "espresso_contrib_aar_lib",
     testonly = 1,
+    manifest = "AndroidManifest.xml",
+    resource_files = glob(["res/**"]),
     exports = [
         ":accessibility_checks",
         ":activity_result_matchers",
@@ -177,67 +170,30 @@ android_library(
     ],
 )
 
-axt_release_lib(
-    name = "espresso_contrib_release",
-    keep_spec = "androidx/test/espresso/contrib",
-    multidex = "native",
-    remove_spec = "androidx/test/espresso/contrib/R[$$\\.]",
-    resource_files = glob(["res/**"]),
-    deps = [
-        ":espresso_contrib_release_lib",
+axt_android_aar(
+    name = "espresso_contrib_aar",
+    testonly = 1,
+    expected_class_prefixes = [
+        "androidx.test.espresso.contrib",
     ],
-)
-
-filegroup(
-    name = "contrib_src",
-    srcs = [
-        ":libaccessibility_checks-src.jar",
-        ":libactivity_result_matchers-src.jar",
-        ":libcounting_idling_resource-src.jar",
-        ":libdesign_lib_actions-src.jar",
-        ":libdrawer_actions-src.jar",
-        ":libpicker_actions-src.jar",
-        ":librecycler_view-src.jar",
-        ":libview_pager_actions-src.jar",
-    ],
-)
-
-combine_jars(
-    name = "contrib_src_jars",
-    srcs = [
-        ":contrib_src",
-    ],
-)
-
-dackka_test(
-    name = "espresso_contrib_doc",
-    jar = ":espresso_contrib_release_all_deploy.jar",
-    src_jar = ":contrib_src_jars.jar",
+    included_dep = ":espresso_contrib_aar_lib",
 )
 
 maven_artifact(
     name = "espresso_contrib_maven_artifact",
-    src = ":espresso_contrib_release.aar",
-    artifact_deps = [
-        "androidx.test.espresso:espresso-core:%s" % ESPRESSO_VERSION,
-        "androidx.test.espresso:espresso-idling-resource:%s" % ESPRESSO_VERSION,
-        "com.google.android.material:material:%s" % GOOGLE_MATERIAL_VERSION,
-        "androidx.recyclerview:recyclerview:%s" % ANDROIDX_RECYCLERVIEW_VERSION,
-        "androidx.drawerlayout:drawerlayout:%s" % ANDROIDX_DRAWER_LAYOUT_VERSION,
-        "androidx.viewpager:viewpager:%s" % ANDROIDX_VIEWPAGER_VERSION,
-        "androidx.core:core:%s" % ANDROIDX_CORE_VERSION,
-        "androidx.legacy:legacy-support-core-utils:%s" % ANDROIDX_LEGACY_SUPPORT_VERSION,
-        "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:%s" % ATF_VERSION,
-    ],
-    artifact_id = "espresso-contrib",
-    group_id = "androidx.test.espresso",
+    testonly = 1,
     last_updated = "20170622000000",
-    src_jar = ":contrib_src_jars.jar",
-    version = "%s" % ESPRESSO_VERSION,
+    target = ":espresso_contrib_aar",
+)
+
+dackka_test(
+    name = "espresso_contrib_doc",
+    runtime_dep = ":espresso_contrib_aar_lib",
+    src_jar = ":espresso_contrib_aar-src.jar",
 )
 
 api_checks(
     name = "espresso_contrib_api",
-    deploy_jar = ":espresso_contrib_release_all_deploy.jar",
-    src_jar = ":contrib_src_jars.jar",
+    runtime_dep = ":espresso_contrib_aar_lib",
+    src_jar = ":espresso_contrib_aar-src.jar",
 )

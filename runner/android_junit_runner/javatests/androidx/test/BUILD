@@ -4,10 +4,6 @@ load(
     "//build_extensions:android_library_test.bzl",
     "axt_android_library_test",
 )
-load(
-    "//build_extensions:android_library_slim_test.bzl",
-    "android_library_slim_test",
-)
 load("@build_bazel_rules_android//android:rules.bzl", "android_library")
 
 package(
@@ -43,10 +39,10 @@ axt_android_library_test(
         ":legacy_test_manifest",
         "//core",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "//runner/android_junit_runner/javatests/androidx/test/testing/fixtures",
         "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
 
@@ -109,10 +105,10 @@ axt_android_library_test(
         ":legacy_test_manifest",
         "//core",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "//runner/android_junit_runner/javatests/androidx/test/testing/fixtures",
         "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
 
@@ -123,7 +119,6 @@ axt_android_library_test(
         ":legacy_test_manifest",
         "//core",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "//runner/android_junit_runner/javatests/androidx/test/testing/fixtures",
         "//runner/rules",
@@ -133,6 +128,7 @@ axt_android_library_test(
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
         "@maven//:org_mockito_mockito_core",
     ],
 )
@@ -147,7 +143,7 @@ axt_android_library_test(
 # empty tests not supported
 #"MyEmptyTest.java",
 
-# A basic test to use as benchmark for android_library_slim_test performance
+# A basic test to use as baseline benchmark
 axt_android_library_test(
     name = "SimpleTest",
     srcs = [
@@ -155,19 +151,6 @@ axt_android_library_test(
     ],
     deps = [
         "//ext/junit",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
-    ],
-)
-
-android_library_slim_test(
-    name = "SimpleTest_slim",
-    srcs = [
-        "SimpleTest.java",
-    ],
-    deps = [
-        "//ext/junit",
-        "//runner/android_junit_runner",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],

@@ -1,7 +1,7 @@
 # Description:
 #  Device Actions for espresso.
 
-load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("//build_extensions:kt_android_library.bzl", "kt_android_library")
 
 licenses(["notice"])
 
@@ -17,12 +17,13 @@ kt_android_library(
     testonly = 1,
     srcs = glob(["*.kt"]),
     deps = [
+        "//annotation/java/androidx/test/annotation",
+        "//espresso/device/java/androidx/test/espresso/device/common",
         "//espresso/device/java/androidx/test/espresso/device/context",
         "//espresso/device/java/androidx/test/espresso/device/controller",
         "//espresso/device/java/androidx/test/espresso/device/sizeclass",
-        "//espresso/device/java/androidx/test/espresso/device/util",
         "//runner/monitor",
         "@maven//:androidx_window_window",
-        "@maven//:androidx_window_window/java",
+        "@maven//:androidx_window_window_java",
     ],
 )

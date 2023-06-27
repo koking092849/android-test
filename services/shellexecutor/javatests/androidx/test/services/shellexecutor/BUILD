@@ -14,7 +14,6 @@ axt_android_local_test(
         "//runner/android_junit_runner",
         "//services/shellexecutor:exec_client",
         "//services/shellexecutor:exec_server",
-        "@maven//:junit_junit",
         "@maven//:org_mockito_mockito_core",
     ],
 )
@@ -34,7 +33,6 @@ axt_android_library_test(
     deps = [
         ":dummy_activity",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "//services/shellexecutor:exec_client",
         "//services/shellexecutor:exec_server",
@@ -42,6 +40,8 @@ axt_android_library_test(
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
         "@maven//:org_jetbrains_kotlin_kotlin_stdlib",
     ],
 )
@@ -55,12 +55,40 @@ axt_android_library_test(
     deps = [
         ":dummy_activity",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "//services/shellexecutor:exec_client",
         "//services/shellexecutor:exec_server",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
+    ],
+)
+
+axt_android_library_test(
+    name = "ShellCommandFileObserverClientTest",
+    srcs = [
+        "ShellCommandFileObserverClientTest.kt",
+    ],
+    deps = [
+        "//runner/monitor",
+        "//services/shellexecutor:exec_client",
+        "//services/shellexecutor/java/androidx/test/services/shellexecutor:file_observer_protocol",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
+)
+
+axt_android_library_test(
+    name = "ShellCommandFileObserverExecutorServerTest",
+    srcs = [
+        "ShellCommandFileObserverExecutorServerTest.kt",
+    ],
+    deps = [
+        "//runner/monitor",
+        "//services/shellexecutor:exec_server",
+        "//services/shellexecutor/java/androidx/test/services/shellexecutor:file_observer_protocol",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
@@ -75,7 +103,6 @@ axt_android_library_test(
     deps = [
         ":dummy_activity",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "//services/shellexecutor:exec_client",
         "//services/shellexecutor:exec_server",
@@ -83,5 +110,6 @@ axt_android_library_test(
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )

@@ -17,8 +17,8 @@ package androidx.test.espresso.device.filter
 
 import android.os.Build
 import android.util.Log
+import androidx.test.espresso.device.common.executeShellCommand
 import androidx.test.espresso.device.controller.DeviceMode
-import androidx.test.espresso.device.util.executeShellCommand
 import androidx.test.filters.AbstractFilter
 import org.junit.runner.Description
 
@@ -72,6 +72,7 @@ internal class RequiresDeviceModeFilter() : AbstractFilter() {
         supportedModes.add(DeviceMode.TABLETOP)
         supportedModes.add(DeviceMode.BOOK)
         supportedModes.add(DeviceMode.FLAT)
+        supportedModes.add(DeviceMode.CLOSED)
       }
     } else { // API 32+
       // Example output on a foldable device:
@@ -87,6 +88,9 @@ internal class RequiresDeviceModeFilter() : AbstractFilter() {
       }
       if (modes.contains("OPENED")) {
         supportedModes.add(DeviceMode.FLAT)
+      }
+      if (modes.contains("CLOSED")) {
+        supportedModes.add(DeviceMode.CLOSED)
       }
     }
     return supportedModes

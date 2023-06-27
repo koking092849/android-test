@@ -1,7 +1,7 @@
 # Description:
 #  Device controller
 
-load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("//build_extensions:kt_android_library.bzl", "kt_android_library")
 
 licenses(["notice"])
 
@@ -19,7 +19,9 @@ kt_android_library(
         "DeviceMode.kt",
     ],
     deps = [
+        "//annotation/java/androidx/test/annotation",
         "//espresso/core/java/androidx/test/espresso:interface",
+        "@maven//:androidx_annotation_annotation",
     ],
 )
 
@@ -30,6 +32,9 @@ kt_android_library(
         "PhysicalDeviceController.kt",
     ],
     deps = [
+        "//espresso/device/java/androidx/test/espresso/device/common",
+        "//espresso/device/java/androidx/test/espresso/device/controller",
         "//runner/monitor",
+        "@maven//:androidx_annotation_annotation",
     ],
 )

@@ -1,10 +1,9 @@
 # Description: Build rules for building androidx.test from source
 
 load("@build_bazel_rules_android//android:rules.bzl", "android_library")
-load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_library")
-load("//build_extensions:release.bzl", "axt_release_lib")
-load("//build_extensions:maven_repo.bzl", "maven_artifact")
-load("//build_extensions:axt_versions.bzl", "ANDROIDX_ANNOTATION_VERSION", "ANDROIDX_TRACING_VERSION", "ANNOTATION_VERSION", "KOTLIN_VERSION", "MONITOR_VERSION")
+load("//build_extensions:kt_android_library.bzl", "kt_android_library")
+load("//build_extensions/maven:axt_android_aar.bzl", "axt_android_aar")
+load("//build_extensions/maven:maven_artifact.bzl", "maven_artifact")
 load("//build_extensions:dackka_test.bzl", "dackka_test")
 load("//build_extensions:api_checks.bzl", "api_checks")
 
@@ -84,6 +83,9 @@ android_library(
         # only needed for external release backwards compatibility
         "internal/platform/app/ActivityInvoker$$CC.java",
     ],
+    custom_package = "androidx.test.monitor",
+    manifest = "AndroidManifest.xml",
+    proguard_specs = [":proguard_library.cfg"],
     visibility = ["//visibility:private"],
     exports = [
         ":monitor",
@@ -94,49 +96,37 @@ android_library(
     ],
 )
 
-# Generate rules for the release artifacts. This generates three targets
-# genrule output: monitor_release_no_deps.jar and monitor_release.aar
-# a java_library target librunner_release_no_deps
-axt_release_lib(
-    name = "monitor_release",
-    custom_package = "androidx.test.monitor",
-    jarjar_rules = ["release_jarjar_rules.txt"],
-    keep_spec = "androidx/test",
-    overlapping_jars = [
-        "//annotation/java/androidx/test/annotation:annotation_release_no_deps.jar",
+axt_android_aar(
+    name = "monitor_aar",
+    # Unfortunately this legacy artifact doesn't follow standard class naming conventions.
+    # so we'll be more explicit in the expected packages list to catch new classes that don't follow
+    # expected package patterns
+    expected_class_prefixes = [
+        "androidx.test.InstrumentationRegistry",
+        "androidx.test.annotation.Beta",
+        "androidx.test.internal",
+        "androidx.test.platform",
+        "androidx.test.runner",
     ],
-    proguard_library = ":proguard_library.cfg",
-    # remove the generated R class
-    remove_spec = "androidx/test/monitor/R[$$\\.]",
-    deps = [
-        ":monitor_release_lib",
-    ],
-)
-
-dackka_test(
-    name = "monitor_doc",
-    jar = ":monitor_release_all_deploy.jar",
-    src_jar = ":libmonitor-src.jar",
+    included_dep = ":monitor_release_lib",
 )
 
 maven_artifact(
     name = "monitor_maven_artifact",
-    src = ":monitor_release.aar",
-    artifact_deps = [
-        "androidx.annotation:annotation:%s" % ANDROIDX_ANNOTATION_VERSION,
-        "androidx.test:annotation:%s" % ANNOTATION_VERSION,
-        "androidx.tracing:tracing:%s" % ANDROIDX_TRACING_VERSION,
-        "org.jetbrains.kotlin:kotlin-stdlib:%s" % KOTLIN_VERSION,
-    ],
-    artifact_id = "monitor",
-    group_id = "androidx.test",
     last_updated = "20170622000000",
+    target = ":monitor_aar",
+)
+
+dackka_test(
+    name = "monitor_doc",
+    runtime_dep = ":monitor_release_lib",
     src_jar = ":libmonitor-src.jar",
-    version = "%s" % MONITOR_VERSION,
 )
 
 api_checks(
     name = "monitor_api",
-    deploy_jar = ":monitor_release_all_deploy.jar",
+    runtime_dep = ":monitor_release_lib",
+    # ideally we would use monitor_aar-src.jar here, but metalava complains
+    # about ExposedInstrumentationApi's package
     src_jar = ":libmonitor-src.jar",
 )

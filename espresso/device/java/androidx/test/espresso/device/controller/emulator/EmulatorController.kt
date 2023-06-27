@@ -15,6 +15,8 @@
  */
 package androidx.test.espresso.device.controller.emulator
 
+import androidx.annotation.RestrictTo
+import androidx.annotation.RestrictTo.Scope
 import androidx.test.espresso.device.action.ScreenOrientation
 import androidx.test.espresso.device.controller.DeviceControllerOperationException
 import androidx.test.espresso.device.controller.DeviceMode
@@ -28,15 +30,20 @@ import com.android.emulator.control.Posture
 import com.android.emulator.control.Posture.PostureValue
 import io.grpc.StatusRuntimeException
 
-/** Implementation of {@link DeviceController} for tests run on an Emulator. */
+/**
+ * Implementation of {@link DeviceController} for tests run on an Emulator.
+ *
+ * @hide
+ */
+@RestrictTo(Scope.LIBRARY)
 class EmulatorController
 constructor(
   private val emulatorControllerStub: EmulatorControllerGrpc.EmulatorControllerBlockingStub
 ) : DeviceController {
   companion object {
     private val TAG = EmulatorController::class.java.simpleName
-    private val DEGREES_TO_ROTATE_LANDSCAPE_TO_PORTRAIT = -45F
-    private val DEGREES_TO_ROTATE_PORTRAIT_TO_LANDSCAPE = 90F
+    private const val DEGREES_TO_ROTATE_LANDSCAPE_TO_PORTRAIT = -90F
+    private const val DEGREES_TO_ROTATE_PORTRAIT_TO_LANDSCAPE = 90F
   }
 
   override fun setDeviceMode(deviceMode: Int) {
@@ -71,15 +78,23 @@ constructor(
   }
 
   override fun setScreenOrientation(orientation: Int) {
-    val degreesToRotate =
-      if (orientation == ScreenOrientation.LANDSCAPE.orientation) {
-        DEGREES_TO_ROTATE_PORTRAIT_TO_LANDSCAPE
-      } else {
-        DEGREES_TO_ROTATE_LANDSCAPE_TO_PORTRAIT
-      }
-    val parameters =
-      ParameterValue.newBuilder().addData(0F).addData(0F).addData(degreesToRotate).build()
     try {
+      val physicalModelValue: PhysicalModelValue =
+        emulatorControllerStub.getPhysicalModel(
+          PhysicalModelValue.newBuilder()
+            .setTarget(PhysicalModelValue.PhysicalType.ROTATION)
+            .build()
+        )
+      val rotation: ParameterValue = physicalModelValue.getValue()
+      val startingRotationDegrees = rotation.getDataList()[2].toFloat()
+      var degreesToRotate =
+        if (orientation == ScreenOrientation.PORTRAIT.orientation) {
+          DEGREES_TO_ROTATE_LANDSCAPE_TO_PORTRAIT + startingRotationDegrees
+        } else {
+          DEGREES_TO_ROTATE_PORTRAIT_TO_LANDSCAPE - startingRotationDegrees
+        }
+      val parameters =
+        ParameterValue.newBuilder().addData(0F).addData(0F).addData(degreesToRotate).build()
       emulatorControllerStub.setPhysicalModel(
         PhysicalModelValue.newBuilder()
           .setTarget(PhysicalModelValue.PhysicalType.ROTATION)

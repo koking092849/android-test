@@ -3,12 +3,17 @@ workspace(name = "android_test_support")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-RULES_JVM_EXTERNAL_TAG = "4.4.2"
+RULES_JVM_EXTERNAL_TAG = "4.5"
 
-RULES_JVM_EXTERNAL_SHA = "735602f50813eb2ea93ca3f5e43b1959bd80b213b836a07a62a29d757670b77b"
+RULES_JVM_EXTERNAL_SHA = "b17d7388feb9bfa7f2fa09031b32707df529f26c91ab9e5d909eb1676badd9a6"
 
-# This needs to be consistent with the KOTLIN_VERSION specified in build_extensions/axt_versions.bzl.
-KOTLIN_VERSION = "1.6.21"
+# These need needs to be consistent with their counterparts in build_extensions/axt_versions.bzl.
+KOTLIN_VERSION = "1.8.20"
+KOTLINX_COROUTINES_VERSION = "1.7.1" 
+GRPC_VERSION = "1.54.1"
+
+# Get from https://github.com/JetBrains/kotlin/releases/
+KOTLINC_RELEASE_SHA = "10df74c3c6e2eafd4c7a5572352d37cbe41774996e42de627023cb4c82b50ae4"
 
 http_archive(
     name = "rules_jvm_external",
@@ -17,29 +22,18 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
 )
 
-# rules_proto defines proto_library.
+# rules_proto defines proto_library, as well as @com_google_protobuf_javalite
 http_archive(
     name = "rules_proto",
-    sha256 = "2490dca4f249b8a9a3ab07bd1ba6eca085aaf8e45a734af92aad0c42d9dc7aaf",
-    strip_prefix = "rules_proto-218ffa7dfa5408492dc86c01ee637614f8695c45",
+    sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
+    strip_prefix = "rules_proto-5.3.0-21.7",
     urls = [
-        "https://github.com/bazelbuild/rules_proto/archive/218ffa7dfa5408492dc86c01ee637614f8695c45.tar.gz",
+        "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
     ],
 )
-
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
-
 rules_proto_dependencies()
-
 rules_proto_toolchains()
-
-# The 'com_google_protobuf_javalite' package is required for Bazel 2.x and below.
-http_archive(
-    name = "com_google_protobuf_javalite",
-    sha256 = "832c476bb442ca98a59c2291b8a504648d1c139b74acc15ef667a0e8f5e984e7",
-    strip_prefix = "protobuf-3.11.3",
-    urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.11.3.zip"],
-)
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
@@ -60,14 +54,27 @@ load(
     "ANDROIDX_RECYCLERVIEW_VERSION",
     "ANDROIDX_TRACING_VERSION",
     "ANDROIDX_VIEWPAGER_VERSION",
+    "ANDROIDX_WINDOW_VERSION",
     "CORE_VERSION",
     "GOOGLE_MATERIAL_VERSION",
     "GUAVA_LISTENABLEFUTURE_VERSION",
     "GUAVA_VERSION",
+    "JUNIT_VERSION",
     "RUNNER_VERSION",
     "UIAUTOMATOR_VERSION",
-    "JUNIT_VERSION"
 )
+
+# gRPC
+http_archive(
+    name = "io_grpc_grpc_java",
+    sha256 = "98c32df8a878cbca5a6799922d28e9df93a4d5607316e0e3f8269a5886d9e429",
+    strip_prefix = "grpc-java-%s" % GRPC_VERSION,
+    url = "https://github.com/grpc/grpc-java/archive/v%s.tar.gz" % GRPC_VERSION,
+)
+
+load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
+
+grpc_java_repositories()
 
 maven_install(
     name = "maven",
@@ -89,6 +96,8 @@ maven_install(
         "androidx.tracing:tracing:" + ANDROIDX_TRACING_VERSION,
         "androidx.test.uiautomator:uiautomator:" + UIAUTOMATOR_VERSION,
         "androidx.viewpager:viewpager:" + ANDROIDX_VIEWPAGER_VERSION,
+        "androidx.window:window:" + ANDROIDX_WINDOW_VERSION,
+        "androidx.window:window-java:" + ANDROIDX_WINDOW_VERSION,
         "aopalliance:aopalliance:1.0",
         "com.android.tools.lint:lint-api:30.1.0",
         "com.android.tools.lint:lint-checks:30.1.0",
@@ -119,9 +128,9 @@ maven_install(
         "com.google.auto.value:auto-value:1.5.1",
         "com.google.code.findbugs:jsr305:3.0.2",
         "com.google.code.gson:gson:2.8.5",
-        "com.google.dagger:dagger-compiler:2.38.1",
-        "com.google.dagger:dagger-producers:2.38.1",
-        "com.google.dagger:dagger:2.38.1",
+        "com.google.dagger:dagger-compiler:2.46",
+        "com.google.dagger:dagger-producers:2.46",
+        "com.google.dagger:dagger:2.46",
         "com.google.errorprone:error_prone_annotations:2.9.0",
         "com.google.errorprone:javac-shaded:9-dev-r4023-3",
         "com.google.flogger:flogger-system-backend:0.4",
@@ -136,8 +145,11 @@ maven_install(
         "com.googlecode.jarjar:jarjar:1.3",
         "com.linkedin.dexmaker:dexmaker-mockito:jar:2.28.1",
         "com.linkedin.dexmaker:dexmaker:2.28.1",
-        "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0",
+        "org.mockito.kotlin:mockito-kotlin:4.1.0",
         "com.squareup:javapoet:1.9.0",
+        "io.grpc:grpc-okhttp:1.54.1",
+        "io.grpc:grpc-stub:1.54.1",
+        "org.apache.tomcat:annotations-api:6.0.53",
         "javax.annotation:javax.annotation-api:1.3.1",
         "javax.inject:javax.inject:1",
         "joda-time:joda-time:2.10.1",
@@ -145,13 +157,16 @@ maven_install(
         "net.bytebuddy:byte-buddy-agent:1.9.10",
         "net.bytebuddy:byte-buddy:1.9.10",
         "net.sf.kxml:kxml2:jar:2.3.0",
-        "org.ccil/cowan.tagsoup:tagsoup:1.2.1",
+        "org.ccil.cowan.tagsoup:tagsoup:1.2.1",
         "org.checkerframework:checker-compat-qual:2.5.5",
         "org.hamcrest:hamcrest-core:1.3",
         "org.hamcrest:hamcrest-library:1.3",
         "org.mockito:mockito-core:2.28.1",
         "org.objenesis:objenesis:2.6",
         "org.pantsbuild:jarjar:1.7.2",
+        "org.jetbrains.kotlin:kotlin-stdlib:%s" % KOTLIN_VERSION,
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:%s" % KOTLINX_COROUTINES_VERSION,
+        "com.google.code.findbugs:jsr305:3.0.2",
         maven.artifact(
             artifact = "robolectric",
             exclusions = [
@@ -166,6 +181,8 @@ maven_install(
             version = "4.9",
         ),
     ],
+    fetch_sources = True,
+    generate_compat_repositories = True,
     repositories = [
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
@@ -190,7 +207,7 @@ maven_install(
 android_sdk_repository(
     name = "androidsdk",
     api_level = 33,
-    build_tools_version = "30.0.3",
+    build_tools_version = "33.0.2",
 )
 
 load("//:repo.bzl", "android_test_repositories")
@@ -203,9 +220,8 @@ robolectric_repositories()
 
 # Kotlin toolchains
 
-rules_kotlin_version = "1.5.0"
-
-rules_kotlin_sha = "12d22a3d9cbcf00f2e2d8f0683ba87d3823cb8c7f6837568dd7e48846e023307"
+rules_kotlin_version = "1.8-RC-12"
+rules_kotlin_sha = "8e5c8ab087e0fa3fbb58e1f6b99d8fe40f75bac44994c3d208eba723284465d6"
 
 http_archive(
     name = "io_bazel_rules_kotlin",
@@ -214,9 +230,6 @@ http_archive(
 )
 
 load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories", "kotlinc_version")
-
-# Get from https://github.com/JetBrains/kotlin/releases/
-KOTLINC_RELEASE_SHA = "632166fed89f3f430482f5aa07f2e20b923b72ef688c8f5a7df3aa1502c6d8ba"
 
 kotlin_repositories(
     compiler_release = kotlinc_version(
@@ -229,19 +242,40 @@ load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
 
-# Android bazel rules
+# Android bazel rules from Dec 22 2022. This is the last commit that supports bazel 6.0.0
+RULES_ANDROID_COMMIT = "ce37817d8589cac4a7cc20cb4d51fe8ad459dea1"
+
+RULES_ANDROID_SHA = "402b1ed3756028dca11835dad3225689a4040c3b377de798709f9a39b5c6af17"
+
 http_archive(
-    name = "build_bazel_rules_android",
-    sha256 = "cd06d15dd8bb59926e4d65f9003bfc20f9da4b2519985c27e190cddc8b7a7806",
-    strip_prefix = "rules_android-0.1.1",
-    urls = ["https://github.com/bazelbuild/rules_android/archive/v0.1.1.zip"],
+    name = "rules_android",
+    sha256 = RULES_ANDROID_SHA,
+    strip_prefix = "rules_android-%s" % RULES_ANDROID_COMMIT,
+    url = "https://github.com/bazelbuild/rules_android/archive/%s.zip" % RULES_ANDROID_COMMIT,
+)
+
+load("@rules_android//:prereqs.bzl", "rules_android_prereqs")
+
+rules_android_prereqs()
+
+load("@rules_android//:defs.bzl", "rules_android_workspace")
+
+rules_android_workspace()
+
+register_toolchains(
+    "@rules_android//toolchains/android:android_default_toolchain",
+    "@rules_android//toolchains/android_sdk:android_sdk_tools",
 )
 
 # Updated 2023-02-01
 http_archive(
     name = "rules_license",
+    sha256 = "6157e1e68378532d0241ecd15d3c45f6e5cfd98fc10846045509fb2a7cc9e381",
     urls = [
         "https://github.com/bazelbuild/rules_license/releases/download/0.0.4/rules_license-0.0.4.tar.gz",
     ],
-    sha256 = "6157e1e68378532d0241ecd15d3c45f6e5cfd98fc10846045509fb2a7cc9e381",
 )
+
+load("@maven//:compat.bzl", "compat_repositories")
+
+compat_repositories()

@@ -21,9 +21,9 @@ android_library(
         "//espresso/core/javatests/androidx/test/espresso:__subpackages__",
     ],
     deps = [
-        "//opensource:hamcrest",
         "//runner/monitor",
         "@maven//:androidx_annotation_annotation",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
 
@@ -43,13 +43,11 @@ android_app_instrumentation_tests(
         "//espresso/core/java/androidx/test/espresso",
         "//espresso/core/java/androidx/test/espresso/base",
         "//espresso/core/java/androidx/test/espresso/internal/data",
-        "//espresso/core/java/androidx/test/espresso/proto/matcher:ui_interaction_view_matchers_android_pb3",
         "//espresso/core/java/androidx/test/espresso/remote:bindable",
         "//espresso/core/java/androidx/test/espresso/remote:exceptions",
         "//espresso/core/java/androidx/test/espresso/remote:interface",
         "//espresso/core/java/androidx/test/espresso/util/concurrent",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "//runner/rules",
         "//testapps/ui_testapp/java/androidx/test/ui/app:lib_neverlink",
@@ -57,6 +55,8 @@ android_app_instrumentation_tests(
         "@maven//:androidx_concurrent_concurrent_futures",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
         "@maven//:org_mockito_mockito_core",
         "@maven_listenablefuture//:com_google_guava_listenablefuture",
     ],

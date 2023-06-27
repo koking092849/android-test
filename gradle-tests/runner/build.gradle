@@ -1,5 +1,42 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id 'com.android.application' version '7.3.1' apply false
-    id 'com.android.library' version '7.3.1' apply false
+    id 'com.android.library'
 }
+
+android {
+    namespace 'androidx.test.gradletests.runner'
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 14
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    testOptions {
+        animationsDisabled = true
+        managedDevices {
+            devices {
+                // run with ../gradlew  nexusOneApi30DebugAndroidTest
+                nexusOneApi30(com.android.build.api.dsl.ManagedVirtualDevice) {
+                    // A lower resolution device is used here for better emulator performance
+                    device = "Nexus One"
+                    apiLevel = 30
+                    // Also use the AOSP Automated Test Device image for better emulator performance
+                    systemImageSource = "aosp-atd"
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    androidTestImplementation libs.runner
+}
+

@@ -27,10 +27,10 @@ axt_android_local_test(
     deps = [
         "//core/java/androidx/test/core",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_test_orchestrator",
         "@maven//:com_google_guava_guava",
-        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )
 
@@ -43,10 +43,10 @@ axt_android_local_test(
     deps = [
         "//core/java/androidx/test/core",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_test_orchestrator",
         "@maven//:com_google_guava_guava",
-        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )
 
@@ -59,10 +59,10 @@ axt_android_local_test(
     deps = [
         "//core/java/androidx/test/core",
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_test_orchestrator",
         "@maven//:com_google_guava_guava",
-        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )
 
@@ -78,8 +78,9 @@ axt_android_library_test(
     ),
     deps = [
         "//ext/junit",
-        "//opensource:hamcrest",
         "//runner/android_junit_runner",
         "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_core",
+        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )

@@ -1,7 +1,7 @@
 # Description:
 #  Emulator controller
 
-load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("//build_extensions:kt_android_library.bzl", "kt_android_library")
 
 licenses(["notice"])
 
@@ -19,8 +19,12 @@ kt_android_library(
     deps = [
         "//espresso/device/java/androidx/test/espresso/device/action",
         "//espresso/device/java/androidx/test/espresso/device/controller",
+        "//opensource/emulator/proto:emulator_controller_java_grpc",
+        "//opensource/emulator/proto:emulator_controller_java_proto_lite",
         "//runner/monitor",
         "@maven//:androidx_annotation_annotation",
-        # TODO(b/215420259) fix gRPC dependency
+        "@maven//:io_grpc_grpc_okhttp",
+        "@maven//:io_grpc_grpc_stub",
+        "@maven//:org_apache_tomcat_annotations_api",
     ],
 )

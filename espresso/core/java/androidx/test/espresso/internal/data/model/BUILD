@@ -1,5 +1,5 @@
 # This package loads and stores test output artifact metadata for easier debugging of Espresso tests
-load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("//build_extensions:kt_android_library.bzl", "kt_android_library")
 
 licenses(["notice"])
 
@@ -10,15 +10,13 @@ package(
 
 kt_android_library(
     name = "model",
-    srcs = [
-        "ActionData.kt",
-        "ScreenData.kt",
-        "TestArtifact.kt",
-        "TestFlow.kt",
-        "ViewData.kt",
-    ],
+    srcs = glob([
+        "*.kt",
+        "*.java",
+    ]),
     deps = [
         "//espresso/core/java/androidx/test/espresso:framework",
-        "//opensource:hamcrest",
+        "@maven//:androidx_annotation_annotation",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
